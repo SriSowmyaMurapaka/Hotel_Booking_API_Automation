@@ -29,10 +29,47 @@ public class CreateBooking {
         TestContext.setLastResponse(response);
     }
 
+    @When("I create a booking with {string} as {string}")
+    public void iCreateABookingWithAs(String field, String value) {
+        String token = TestContext.getLastToken();
+        response = CreateBookingClient.createBooking(token, CreateBookingClient.buildBookingRequestWithField(field, value));
+        TestContext.setLastResponse(response);
+    }
+
+    @When("I create a booking with {string}")
+    public void iCreateABookingWith(String dateCondition) {
+        String token = TestContext.getLastToken();
+        response = CreateBookingClient.createBooking(token, CreateBookingClient.buildBookingRequestWithDateCondition(dateCondition));
+        TestContext.setLastResponse(response);
+    }
+
+    @When("I create a booking with an invalid room id")
+    public void iCreateABookingWithAnInvalidRoomId() {
+        String token = TestContext.getLastToken();
+        response = CreateBookingClient.createBooking(token, CreateBookingClient.buildBookingRequestWithInvalidRoomId());
+        TestContext.setLastResponse(response);
+    }
+
     @And("the response body should contain the booking details")
     public void theResponseBodyShouldContainTheBookingDetails() {
         CreateBookingClient.assertBookingCreated(response);
         TestContext.setLastResponse(response);
+    }
+
+    @Then("the booking request should be rejected")
+    public void theBookingRequestShouldBeRejected() {
+        CreateBookingClient.assertBookingRejected(response);
+        TestContext.setLastResponse(response);
+    }
+
+    @And("the error message should contain {string}")
+    public void theErrorMessageShouldContain(String expectedSubstring) {
+        Response lastResponse = TestContext.getLastResponse();
+        if (lastResponse == null) {
+            lastResponse = response;
+        }
+        CreateBookingClient.assertErrorMessageContains(lastResponse, expectedSubstring);
+        TestContext.setLastResponse(lastResponse);
     }
 
     @And("the response matches with json schema {string}")
