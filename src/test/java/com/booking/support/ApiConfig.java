@@ -26,19 +26,19 @@ public final class ApiConfig {
     }
 
     public static String username() {
-        return getConfig(USERNAME_SYSPROP, USERNAME_ENV, USERNAME_SYSPROP, null);
+        return getConfig(USERNAME_SYSPROP, USERNAME_ENV, USERNAME_SYSPROP);
     }
 
     public static String password() {
-        return getConfig(PASSWORD_SYSPROP, PASSWORD_ENV, PASSWORD_SYSPROP, null);
+        return getConfig(PASSWORD_SYSPROP, PASSWORD_ENV, PASSWORD_SYSPROP);
     }
 
-    private static String getConfig(String systemPropertyName, String envVarName, String propertiesKey, String defaultValue) {
+    private static String getConfig(String systemPropertyName, String envVarName, String propertiesKey) {
         return firstNonBlank(
                 System.getProperty(systemPropertyName),
                 System.getenv(envVarName),
                 PROPS.getProperty(propertiesKey),
-                defaultValue
+                null
         );
     }
 

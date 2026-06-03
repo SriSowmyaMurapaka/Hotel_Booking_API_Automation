@@ -19,7 +19,7 @@ public class ErrorResponseSteps {
         return response;
     }
 
-    private void assertJsonFields(Response response, Map<String, String> expectedFields) {
+    private void assertJsonFields(Response response, Map<String, String> expectedFields, String context) {
         for (Map.Entry<String, String> entry : expectedFields.entrySet()) {
             String field = entry.getKey();
             String expectedValue = entry.getValue();
@@ -31,12 +31,22 @@ public class ErrorResponseSteps {
             try {
                 actualValue = response.jsonPath().getString(field);
             } catch (Exception e) {
-                fail("Response body is not JSON or cannot read field '" + field + "' for '" + "error response" + "': " + e.getMessage());
+                fail("Response body is not JSON or cannot read field '" + field + "' for '" + context + "': " + e.getMessage());
                 return;
             }
 
-            assertEquals(expectedValue, actualValue, "Unexpected value for field '" + field + "' for '" + "error response" + "'");
+            assertEquals(expectedValue, actualValue, "Unexpected value for field '" + field + "' for '" + context + "'");
         }
+    }
+
+    @And("Validate the {string} error response")
+    public void validateTheErrorResponse(String errorName, DataTable dataTable) {
+        Response response = latestResponse();
+        List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
+        assertFalse(rows.isEmpty(), "Error response table must contain at least 1 row");
+
+        Map<String, String> expected = rows.get(0);
+        assertJsonFields(response, expected, errorName);
     }
 
     @And("Validate the error response fields")
@@ -54,6 +64,6 @@ public class ErrorResponseSteps {
             }
         }
 
-        assertJsonFields(response, expected);
+        assertJsonFields(response, expected, "error response");
     }
 }

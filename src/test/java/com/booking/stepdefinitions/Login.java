@@ -18,9 +18,21 @@ public class Login {
         TestContext.setLastResponse(response);
     }
 
+    @When("I log in to the booking website using username {string} and password {string}")
+    public void iLogInToTheBookingWebsiteUsingUsernameAndPassword(String username, String password) {
+        response = LoginClient.login(username, password);
+        TestContext.setLastResponse(response);
+    }
+
     @Then("the login request should be successful")
     public void theLoginRequestShouldBeSuccessful() {
         response.then().statusCode(200);
+        TestContext.setLastResponse(response);
+    }
+
+    @Then("the login request should be rejected")
+    public void theLoginRequestShouldBeRejected() {
+        response.then().statusCode(401);
         TestContext.setLastResponse(response);
     }
 
