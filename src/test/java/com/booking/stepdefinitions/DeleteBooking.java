@@ -40,6 +40,47 @@ public class DeleteBooking {
         TestContext.setLastResponse(response);
     }
 
+    @When("I delete booking id {string}")
+    public void iDeleteBookingId(String bookingId) {
+        String token = TestContext.getLastToken();
+        response = deleteBookingClient.deleteBooking(token, bookingId);
+        TestContext.setLastResponse(response);
+    }
+
+    @When("I delete the created booking using token {string}")
+    public void iDeleteTheCreatedBookingUsingToken(String token) {
+        int bookingId = getCreatedBookingId();
+        response = deleteBookingClient.deleteBooking(token, bookingId);
+        TestContext.setLastResponse(response);
+    }
+
+    @Then("the delete booking request should be rejected with not found error")
+    public void theDeleteBookingRequestShouldBeRejectedWithNotFoundError() {
+        deleteBookingClient.assertNotFound(response);
+        TestContext.setLastResponse(response);
+    }
+
+    @Then("the delete booking request should be rejected with unauthorized error")
+    public void theDeleteBookingRequestShouldBeRejectedWithUnauthorizedError() {
+        deleteBookingClient.assertUnauthorized(response);
+        TestContext.setLastResponse(response);
+    }
+
+    @When("I delete the created booking again")
+    public void iDeleteTheCreatedBookingAgain() {
+        int bookingId = getCreatedBookingId();
+        String token = TestContext.getLastToken();
+        response = deleteBookingClient.deleteBooking(token, bookingId);
+        TestContext.setLastResponse(response);
+    }
+
+    @When("I delete the created booking without authentication")
+    public void iDeleteTheCreatedBookingWithoutAuthentication() {
+        int bookingId = getCreatedBookingId();
+        response = deleteBookingClient.deleteBooking(null, bookingId);
+        TestContext.setLastResponse(response);
+    }
+
     @Then("the booking should be deleted successfully")
     public void theBookingShouldBeDeletedSuccessfully() {
         deleteBookingClient.assertBookingDeleted(response);
