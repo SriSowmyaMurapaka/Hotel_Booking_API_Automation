@@ -9,4 +9,7 @@ public final class TestContext {
         LAST_RESPONSE.set(response);
     }
 
+    public static Response getLastResponse() {
+        return LAST_RESPONSE.get();
+    }
 }

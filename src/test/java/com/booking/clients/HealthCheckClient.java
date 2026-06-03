@@ -20,4 +20,12 @@ public class HealthCheckClient {
                 .response();
     }
 
+    public Response postHealthCheck(String endpointPath) {
+        return given().log().all()
+                .when()
+                .post(ApiConfig.BASE_URL + endpointPath)
+                .then()
+                .extract()
+                .response();
+    }
 }

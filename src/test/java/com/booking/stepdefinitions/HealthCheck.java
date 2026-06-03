@@ -35,4 +35,16 @@ public class HealthCheck {
         org.junit.jupiter.api.Assertions.assertEquals(expectedStatus, actualStatus, "Unexpected health status");
         TestContext.setLastResponse(response);
     }
+
+    @When("I request the health check using endpoint {string}")
+    public void iRequestTheHealthCheckUsingEndpoint(String endpointPath) {
+        response = HealthCheckClient.getHealthCheck(endpointPath);
+        TestContext.setLastResponse(response);
+    }
+
+    @When("I request the health check using POST and endpoint {string}")
+    public void iRequestTheHealthCheckUsingPOSTAndEndpoint(String endpointPath) {
+        response = HealthCheckClient.postHealthCheck(endpointPath);
+        TestContext.setLastResponse(response);
+    }
 }
