@@ -79,6 +79,8 @@ Examples you may use:
 - `@updatebooking`
 - `@deletebooking`
 - `@endtoendbookingflow`
+- `@positive`
+- `@negative`
 
 ### Run from IntelliJ IDEA
 
