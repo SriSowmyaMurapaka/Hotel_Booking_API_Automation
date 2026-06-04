@@ -271,6 +271,7 @@ public class CreateBookingClient {
             return;
         }
 
+        assert bodyString != null;
         assertTrue(bodyString.contains(expectedSubstring),
                 "Expected response body to contain '" + expectedSubstring + "' but was: " + bodyString);
     }
