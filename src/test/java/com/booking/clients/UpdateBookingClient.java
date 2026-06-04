@@ -75,58 +75,79 @@ public class UpdateBookingClient {
     }
 
     public Map<String, Object> buildUpdateBookingRequestWithField(String field, String value) {
-        Map<String, Object> body = new HashMap<>(buildValidUpdateBookingRequest());
-
         if (field == null || field.isBlank()) {
             throw new IllegalArgumentException("field should not be blank");
         }
 
-        if ("firstname".equalsIgnoreCase(field) || "lastname".equalsIgnoreCase(field)
-                || "email".equalsIgnoreCase(field) || "phone".equalsIgnoreCase(field)) {
-            body.put(field.toLowerCase(), value);
-            return body;
+        Map<String, Object> body = new HashMap<>(buildValidUpdateBookingRequest());
+        String normalizedField = field.toLowerCase();
+
+        if (normalizedField.startsWith("bookingdates.")) {
+            return applyBookingDateField(body, normalizedField, value);
         }
 
-        if ("roomid".equalsIgnoreCase(field)) {
-            if (value == null || value.isBlank()) {
-                body.put("roomid", value);
-                return body;
-            }
-            try {
-                body.put("roomid", Integer.parseInt(value));
-            } catch (Exception ignored) {
-                body.put("roomid", value);
-            }
-            return body;
+        if ("roomid".equals(normalizedField)) {
+            return applyRoomId(body, value);
         }
 
-        if ("depositpaid".equalsIgnoreCase(field)) {
-            if (value == null || value.isBlank()) {
-                body.put("depositpaid", value);
-                return body;
-            }
-            if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
-                body.put("depositpaid", Boolean.parseBoolean(value));
-                return body;
-            }
-            body.put("depositpaid", value);
-            return body;
+        if ("depositpaid".equals(normalizedField)) {
+            return applyDepositPaid(body, value);
         }
 
-        if (field.toLowerCase().startsWith("bookingdates.")) {
-            Object bookingDatesObj = body.get("bookingdates");
-            if (!(bookingDatesObj instanceof Map)) {
-                bookingDatesObj = new HashMap<String, Object>();
-            }
-
-            Map<String, Object> bookingDates = new HashMap<>((Map<String, Object>) bookingDatesObj);
-            String key = field.substring("bookingdates.".length()).toLowerCase();
-            bookingDates.put(key, value);
-            body.put("bookingdates", bookingDates);
+        if (isStringField(normalizedField)) {
+            body.put(normalizedField, value);
             return body;
         }
 
         throw new IllegalArgumentException("Unsupported field: " + field);
+    }
+
+    private Map<String, Object> applyBookingDateField(Map<String, Object> body, String field, String value) {
+        String nestedField = field.substring("bookingdates.".length());
+        Map<String, Object> bookingDates = extractBookingDates(body);
+        bookingDates.put(nestedField, value);
+        body.put("bookingdates", bookingDates);
+        return body;
+    }
+
+    private Map<String, Object> applyRoomId(Map<String, Object> body, String value) {
+        if (value == null || value.isBlank()) {
+            body.put("roomid", value);
+            return body;
+        }
+        try {
+            body.put("roomid", Integer.parseInt(value.trim()));
+        } catch (NumberFormatException ignored) {
+            body.put("roomid", value);
+        }
+        return body;
+    }
+
+    private Map<String, Object> applyDepositPaid(Map<String, Object> body, String value) {
+        if (value == null || value.isBlank()) {
+            body.put("depositpaid", value);
+            return body;
+        }
+        if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
+            body.put("depositpaid", Boolean.parseBoolean(value));
+            return body;
+        }
+        body.put("depositpaid", value);
+        return body;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> extractBookingDates(Map<String, Object> body) {
+        Object obj = body.get("bookingdates");
+        if (obj instanceof Map<?, ?>) {
+            return new HashMap<>((Map<String, Object>) obj);
+        }
+        return new HashMap<>();
+    }
+
+    private boolean isStringField(String field) {
+        return "firstname".equals(field) || "lastname".equals(field)
+                || "email".equals(field) || "phone".equals(field);
     }
 
     public Map<String, Object> buildUpdateBookingRequestWithDateCondition(String dateCondition) {
