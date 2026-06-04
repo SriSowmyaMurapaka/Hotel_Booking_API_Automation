@@ -56,56 +56,66 @@ public class CreateBookingClient {
     }
 
     public Map<String, Object> buildBookingRequestWithField(String field, String value) {
-        Map<String, Object> body = new HashMap<>(buildValidBookingRequest());
-
         if (field == null || field.isBlank()) {
             throw new IllegalArgumentException("field should not be blank");
         }
 
-        if (field.toLowerCase().startsWith("bookingdates.")) {
-            Object bookingDatesObj = body.get("bookingdates");
-            Map<String, Object> bookingDates;
-            if (bookingDatesObj instanceof Map) {
-                bookingDates = new HashMap<>((Map<String, Object>) bookingDatesObj);
-            } else {
-                bookingDates = new HashMap<>();
-            }
+        Map<String, Object> body = new HashMap<>(buildValidBookingRequest());
+        String normalizedField = field.toLowerCase();
 
-            String nestedField = field.substring("bookingdates.".length()).toLowerCase();
-            if (!"checkin".equals(nestedField) && !"checkout".equals(nestedField)) {
-                throw new IllegalArgumentException("Unsupported bookingdates field: " + nestedField);
-            }
-
-            if (value == null || value.isBlank()) {
-                bookingDates.put(nestedField, null);
-            } else {
-                bookingDates.put(nestedField, value);
-            }
-            body.put("bookingdates", bookingDates);
-            return body;
+        if (normalizedField.startsWith("bookingdates.")) {
+            return applyBookingDateField(body, normalizedField, value);
         }
 
-        if ("roomid".equalsIgnoreCase(field)) {
-            if (value == null || value.isBlank()) {
-                body.put("roomid", null);
-                return body;
-            }
-
-            try {
-                body.put("roomid", Integer.parseInt(value.trim()));
-            } catch (NumberFormatException e) {
-                body.put("roomid", value);
-            }
-            return body;
+        if ("roomid".equals(normalizedField)) {
+            return applyRoomId(body, value);
         }
 
-        if ("firstname".equalsIgnoreCase(field) || "lastname".equalsIgnoreCase(field)
-                || "email".equalsIgnoreCase(field) || "phone".equalsIgnoreCase(field)) {
-            body.put(field.toLowerCase(), value);
+        if (isStringField(normalizedField)) {
+            body.put(normalizedField, value);
             return body;
         }
 
         throw new IllegalArgumentException("Unsupported field: " + field);
+    }
+
+    private Map<String, Object> applyBookingDateField(Map<String, Object> body, String field, String value) {
+        String nestedField = field.substring("bookingdates.".length());
+        if (!"checkin".equals(nestedField) && !"checkout".equals(nestedField)) {
+            throw new IllegalArgumentException("Unsupported bookingdates field: " + nestedField);
+        }
+
+        Map<String, Object> bookingDates = extractBookingDates(body);
+        bookingDates.put(nestedField, (value == null || value.isBlank()) ? null : value);
+        body.put("bookingdates", bookingDates);
+        return body;
+    }
+
+    private Map<String, Object> applyRoomId(Map<String, Object> body, String value) {
+        if (value == null || value.isBlank()) {
+            body.put("roomid", null);
+            return body;
+        }
+        try {
+            body.put("roomid", Integer.parseInt(value.trim()));
+        } catch (NumberFormatException e) {
+            body.put("roomid", value);
+        }
+        return body;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> extractBookingDates(Map<String, Object> body) {
+        Object obj = body.get("bookingdates");
+        if (obj instanceof Map<?, ?>) {
+            return new HashMap<>((Map<String, Object>) obj);
+        }
+        return new HashMap<>();
+    }
+
+    private boolean isStringField(String field) {
+        return "firstname".equals(field) || "lastname".equals(field)
+                || "email".equals(field) || "phone".equals(field);
     }
 
     public Map<String, Object> buildBookingRequestWithDateCondition(String dateCondition) {
