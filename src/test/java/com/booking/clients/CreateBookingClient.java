@@ -34,7 +34,7 @@ public class CreateBookingClient {
     }
 
     private static int randomRoomId() {
-        return rnd().nextInt(1, 4);
+        return rnd().nextInt(1, 1000);
     }
 
     public BookingRequest buildValidBookingRequestPojo() {
